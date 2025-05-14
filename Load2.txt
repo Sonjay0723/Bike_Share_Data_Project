@@ -1,0 +1,37 @@
+IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') 
+	CREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] 
+	WITH ( FORMAT_TYPE = DELIMITEDTEXT ,
+	       FORMAT_OPTIONS (
+			 FIELD_TERMINATOR = ',',
+			 FIRST_ROW = 2,
+			 USE_TYPE_DEFAULT = FALSE
+			))
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'jp-system-name_jpaccount_dfs_core_windows_net') 
+	CREATE EXTERNAL DATA SOURCE [jp-system-name_jpaccount_dfs_core_windows_net] 
+	WITH (
+		LOCATION = 'abfss://jp-system-name@jpaccount.dfs.core.windows.net' 
+	)
+GO
+
+CREATE EXTERNAL TABLE dbo.riders (
+	[rider_id] BIGINT,
+	[first] VARCHAR(50),
+	[last] VARCHAR(50),
+	[address] VARCHAR(200),
+	[birthday] DATE,
+	[account_start] DATE,
+	[account_end] DATE,
+	[is_member] BIT
+	)
+	WITH (
+	LOCATION = 'publicrider.csv',
+	DATA_SOURCE = [jp-system-name_jpaccount_dfs_core_windows_net],
+	FILE_FORMAT = [SynapseDelimitedTextFormat]
+	)
+GO
+
+
+SELECT TOP 100 * FROM dbo.riders
+GO
